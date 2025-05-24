@@ -6,37 +6,21 @@
   <title>Ocean Love Diary</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600&family=Caveat&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Quicksand', sans-serif;
       background: linear-gradient(to bottom right, #AEE6F5, #FFB6C1);
       color: #0F3E5A;
     }
-
-    .page {
-      display: none;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-      padding: 1rem;
-    }
-
-    .active {
-      display: flex;
-    }
-
+    .page { display: none; justify-content: center; align-items: center; height: 100vh; flex-direction: column; padding: 1rem; }
+    .active { display: flex; }
     .logo {
       font-family: 'Fredoka One', cursive;
       font-size: 3rem;
       margin-bottom: 1rem;
       color: #FFB6C1;
     }
-
     button, input, textarea {
       padding: 0.75rem;
       border: none;
@@ -46,14 +30,12 @@
       width: 80%;
       font-family: 'Quicksand', sans-serif;
     }
-
     button {
       background-color: #FFB6C1;
       color: white;
       font-weight: bold;
       cursor: pointer;
     }
-
     .chat-card {
       background: white;
       border-radius: 16px;
@@ -63,56 +45,40 @@
       max-width: 500px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-
-    .message {
-      font-family: 'Caveat', cursive;
-      font-size: 1.2rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .small {
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    .interact {
-      display: flex;
-      gap: 1rem;
-      margin-top: 0.5rem;
-    }
+    .message { font-family: 'Caveat', cursive; font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .small { font-size: 0.9rem; color: #666; }
+    .interact { display: flex; gap: 1rem; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
   <div class="page active" id="loginPage">
     <div class="logo">🌊 Ocean Love</div>
-    <button onclick="goToForm()">Login</button>
+    <button onclick="goToForm()">Start Writing</button>
   </div>
 
   <div class="page" id="formPage">
     <input type="text" id="to" placeholder="To">
-    <textarea id="message" rows="4" placeholder="Your Message"></textarea>
+    <textarea id="message" rows="4" placeholder="Write your message here..."></textarea>
     <input type="text" id="from" placeholder="From">
-    <input type="text" id="song" placeholder="YouTube Link">
-    <button onclick="submitMessage()">KIRIM</button>
+    <input type="text" id="song" placeholder="YouTube Link (optional)">
+    <button onclick="submitMessage()">Send Message</button>
     <button onclick="goToFeed()">📬 Open Love Letters</button>
   </div>
 
   <div class="page" id="feedPage">
-    <div class="logo">💬 Ocean Feed</div>
+    <div class="logo">💌 Ocean Feed</div>
     <div id="feed"></div>
-    <button onclick="goToForm()">💌 Write Another</button>
+    <button onclick="goToForm()">➕ Write Another</button>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script>
-    // Firebase config kamu
     const firebaseConfig = {
       apiKey: "AIzaSyAdr8Ovug4zqdCp3T6i6pH0tfM0bgsH4Ao",
       authDomain: "genn-3d1e7.firebaseapp.com",
-      databaseURL: "https://genn-3d1e7-default-rtdb.firebaseio.com",
+      databaseURL: "https://genn-3d1e7-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "genn-3d1e7",
       storageBucket: "genn-3d1e7.appspot.com",
       messagingSenderId: "377479487738",
@@ -120,26 +86,21 @@
       measurementId: "G-3CS67F1ZR4"
     };
 
-    // Inisialisasi Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     function goToForm() {
-      document.getElementById('loginPage').classList.remove('active');
-      document.getElementById('feedPage').classList.remove('active');
-      document.getElementById('formPage').classList.add('active');
+      showPage('formPage');
     }
 
     function goToFeed() {
-      document.getElementById('formPage').classList.remove('active');
-      document.getElementById('loginPage').classList.remove('active');
-      document.getElementById('feedPage').classList.add('active');
+      showPage('feedPage');
       loadMessages();
     }
 
-    function convertYoutubeLink(link) {
-      const videoId = link.split('v=')[1]?.split('&')[0];
-      return `https://www.youtube.com/embed/${videoId}`;
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
     }
 
     function submitMessage() {
@@ -148,11 +109,15 @@
       const from = document.getElementById('from').value;
       const song = document.getElementById('song').value;
 
-      const newMsg = {
-        to, message, from, song, createdAt: Date.now()
+      const newMessage = {
+        to,
+        message,
+        from,
+        song,
+        time: Date.now()
       };
 
-      db.ref('messages').push(newMsg);
+      db.ref('messages').push(newMessage);
       goToFeed();
     }
 
@@ -160,28 +125,34 @@
       const feed = document.getElementById('feed');
       feed.innerHTML = '';
 
-      db.ref('messages').once('value', snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          const entries = Object.values(data).sort((a, b) => b.createdAt - a.createdAt);
-          entries.forEach(msg => {
-            const card = document.createElement('div');
-            card.className = 'chat-card';
-            card.innerHTML = `
-              <div class="small">To: ${msg.to}</div>
-              <div class="message">${msg.message}</div>
-              <div class="small">From: ${msg.from}</div>
-              <div>${msg.song ? `<iframe width="100%" height="200" src="${convertYoutubeLink(msg.song)}" frameborder="0" allowfullscreen></iframe>` : ''}</div>
-              <div class="interact">
-                <button onclick="like(this)">❤️ Like</button>
-                <button onclick="alert('Comment feature coming soon!')">💬 Comment</button>
-                <button onclick="shareMessage('${msg.message}')">🔗 Share</button>
-              </div>
-            `;
-            feed.appendChild(card);
-          });
-        }
+      db.ref('messages').orderByChild('time').once('value', snapshot => {
+        snapshot.forEach(child => {
+          const data = child.val();
+          const card = document.createElement('div');
+          card.className = 'chat-card';
+          card.innerHTML = `
+            <div class="small">To: ${data.to}</div>
+            <div class="message">${data.message}</div>
+            <div class="small">From: ${data.from}</div>
+            ${data.song ? `<iframe width="100%" height="200" src="${convertYoutube(data.song)}" frameborder="0" allowfullscreen></iframe>` : ''}
+            <div class="interact">
+              <button onclick="like(this)">❤️ Like</button>
+              <button onclick="alert('Comment feature coming soon!')">💬 Comment</button>
+              <button onclick="shareMessage('${data.message}')">🔗 Share</button>
+            </div>
+          `;
+          feed.prepend(card);
+        });
       });
+    }
+
+    function convertYoutube(url) {
+      try {
+        const id = new URL(url).searchParams.get('v');
+        return `https://www.youtube.com/embed/${id}`;
+      } catch {
+        return '';
+      }
     }
 
     function like(btn) {
