@@ -25,8 +25,16 @@
     h1.logo {
       font-family: 'Fredoka One', cursive;
       font-size: 3rem;
-      margin-bottom: 1rem;
+      margin-bottom: 0.25rem;
       color: #FFB6C1;
+    }
+
+    .username {
+      font-family: 'Quicksand', sans-serif;
+      color: #FFB6C1;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
     }
 
     input, textarea, button {
@@ -90,6 +98,7 @@
 <body>
 
   <h1 class="logo">🌊 Ocean Chat</h1>
+  <div class="username">@daviinaap</div>
 
   <input type="text" id="to" placeholder="To" />
   <textarea id="message" rows="3" placeholder="Your Message"></textarea>
@@ -152,6 +161,7 @@
 
       database.ref().update(updates);
 
+      // Clear inputs after sending
       document.getElementById('to').value = '';
       document.getElementById('message').value = '';
       document.getElementById('from').value = '';
