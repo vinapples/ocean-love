@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ocean Chat with YouTube Embed</title>
+  <title>Ocean Chat with Firebase + YouTube Embed</title>
   <style>
     body {
       font-family: 'Quicksand', sans-serif;
@@ -57,16 +57,34 @@
 
   <div id="feed"></div>
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
   <script>
+    // Your Firebase config - Replace with your actual config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdr8Ovug4zqdCp3T6i6pH0tfM0bgsH4Ao",
+      authDomain: "genn-3d1e7.firebaseapp.com",
+      databaseURL: "https://genn-3d1e7-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "genn-3d1e7",
+      storageBucket: "genn-3d1e7.appspot.com",
+      messagingSenderId: "377479487738",
+      appId: "1:377479487738:web:933e26e3e48057b0132943"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Convert YouTube link to embed URL
     function convertYoutubeLink(link) {
       let videoId = '';
 
       if (link.includes('youtu.be')) {
-        // shortened URL format
         const parts = link.split('/');
         videoId = parts[parts.length - 1].split('?')[0];
       } else if (link.includes('youtube.com')) {
-        // normal URL format
         const urlParams = new URLSearchParams(link.split('?')[1]);
         videoId = urlParams.get('v');
       }
@@ -75,6 +93,7 @@
       return `https://www.youtube.com/embed/${videoId}`;
     }
 
+    // Submit message function
     function submitMessage() {
       const to = document.getElementById('to').value.trim();
       const message = document.getElementById('message').value.trim();
@@ -82,25 +101,18 @@
       const song = document.getElementById('song').value.trim();
 
       if (!to || !message || !from) {
-        alert('Please fill To, Message, and From fields!');
+        alert('Please fill To, Message, and From!');
         return;
       }
 
-      const feed = document.getElementById('feed');
+      const newMsgKey = database.ref().child('messages').push().key;
 
-      const chatCard = document.createElement('div');
-      chatCard.className = 'chat-card';
+      const messageData = { to, message, from, song };
 
-      const embedLink = song ? convertYoutubeLink(song) : '';
+      const updates = {};
+      updates['/messages/' + newMsgKey] = messageData;
 
-      chatCard.innerHTML = `
-        <div><strong>To:</strong> ${to}</div>
-        <div style="margin: 0.5rem 0;">${message}</div>
-        <div><strong>From:</strong> ${from}</div>
-        ${embedLink ? `<iframe width="100%" height="200" src="${embedLink}" frameborder="0" allowfullscreen></iframe>` : ''}
-      `;
-
-      feed.prepend(chatCard);
+      database.ref().update(updates);
 
       // Clear inputs
       document.getElementById('to').value = '';
@@ -108,6 +120,31 @@
       document.getElementById('from').value = '';
       document.getElementById('song').value = '';
     }
+
+    // Real-time listener to display messages
+    const feed = document.getElementById('feed');
+    database.ref('messages').on('value', (snapshot) => {
+      feed.innerHTML = '';
+      const data = snapshot.val();
+      if (data) {
+        const messages = Object.values(data).reverse();
+        messages.forEach(msg => {
+          const chatCard = document.createElement('div');
+          chatCard.className = 'chat-card';
+
+          const embedLink = msg.song ? convertYoutubeLink(msg.song) : '';
+
+          chatCard.innerHTML = `
+            <div><strong>To:</strong> ${msg.to}</div>
+            <div style="margin: 0.5rem 0;">${msg.message}</div>
+            <div><strong>From:</strong> ${msg.from}</div>
+            ${embedLink ? `<iframe width="100%" height="200" src="${embedLink}" frameborder="0" allowfullscreen></iframe>` : ''}
+          `;
+
+          feed.appendChild(chatCard);
+        });
+      }
+    });
   </script>
 </body>
 </html>
