@@ -3,51 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ocean Chat with Firebase + YouTube Embed</title>
+  <title>Ocean Chat with Firebase + YouTube</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600&family=Caveat&display=swap" rel="stylesheet" />
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
       font-family: 'Quicksand', sans-serif;
       background: linear-gradient(to bottom right, #AEE6F5, #FFB6C1);
       color: #0F3E5A;
-      margin: 0;
-      padding: 1rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      padding: 1rem;
     }
+
+    h1.logo {
+      font-family: 'Fredoka One', cursive;
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #FFB6C1;
+    }
+
     input, textarea, button {
-      width: 300px;
-      margin: 0.5rem 0;
+      width: 90vw;
+      max-width: 350px;
       padding: 0.75rem;
+      margin: 0.5rem 0;
       border-radius: 12px;
       border: none;
       font-size: 1rem;
+      font-family: 'Quicksand', sans-serif;
     }
+
     button {
       background-color: #FFB6C1;
       color: white;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
+
+    button:hover {
+      background-color: #ff8aa6;
+    }
+
     .chat-card {
       background: white;
       border-radius: 16px;
       padding: 1rem;
       margin: 1rem 0;
-      width: 90%;
+      width: 90vw;
       max-width: 500px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      font-family: 'Quicksand', sans-serif;
+      color: #0F3E5A;
     }
+
+    .chat-card .message {
+      font-family: 'Caveat', cursive;
+      font-size: 1.2rem;
+      margin: 0.5rem 0;
+    }
+
     iframe {
       border-radius: 12px;
       margin-top: 0.5rem;
+      width: 100%;
+      height: 200px;
+    }
+
+    @media (max-width: 400px) {
+      input, textarea, button {
+        width: 95vw;
+      }
+      .chat-card {
+        width: 95vw;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>🌊 Ocean Chat</h1>
+  <h1 class="logo">🌊 Ocean Chat</h1>
 
   <input type="text" id="to" placeholder="To" />
   <textarea id="message" rows="3" placeholder="Your Message"></textarea>
@@ -62,7 +104,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
-    // Your Firebase config - Replace with your actual config
     const firebaseConfig = {
       apiKey: "AIzaSyAdr8Ovug4zqdCp3T6i6pH0tfM0bgsH4Ao",
       authDomain: "genn-3d1e7.firebaseapp.com",
@@ -73,11 +114,9 @@
       appId: "1:377479487738:web:933e26e3e48057b0132943"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Convert YouTube link to embed URL
     function convertYoutubeLink(link) {
       let videoId = '';
 
@@ -93,7 +132,6 @@
       return `https://www.youtube.com/embed/${videoId}`;
     }
 
-    // Submit message function
     function submitMessage() {
       const to = document.getElementById('to').value.trim();
       const message = document.getElementById('message').value.trim();
@@ -114,14 +152,12 @@
 
       database.ref().update(updates);
 
-      // Clear inputs
       document.getElementById('to').value = '';
       document.getElementById('message').value = '';
       document.getElementById('from').value = '';
       document.getElementById('song').value = '';
     }
 
-    // Real-time listener to display messages
     const feed = document.getElementById('feed');
     database.ref('messages').on('value', (snapshot) => {
       feed.innerHTML = '';
@@ -136,9 +172,9 @@
 
           chatCard.innerHTML = `
             <div><strong>To:</strong> ${msg.to}</div>
-            <div style="margin: 0.5rem 0;">${msg.message}</div>
+            <div class="message">${msg.message}</div>
             <div><strong>From:</strong> ${msg.from}</div>
-            ${embedLink ? `<iframe width="100%" height="200" src="${embedLink}" frameborder="0" allowfullscreen></iframe>` : ''}
+            ${embedLink ? `<iframe src="${embedLink}" frameborder="0" allowfullscreen></iframe>` : ''}
           `;
 
           feed.appendChild(chatCard);
