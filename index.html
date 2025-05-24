@@ -3,26 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ocean Chat Diary</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600&family=Caveat&display=swap"
-    rel="stylesheet"
-  />
+  <title>Ocean Chat Diary with Firebase</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600&family=Caveat&display=swap" rel="stylesheet" />
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    /* ... pakai style kamu yang sebelumnya ... */
     body {
       margin: 0;
       font-family: 'Quicksand', sans-serif;
-      background: linear-gradient(to bottom right, #aee6f5, #ffb6c1);
-      color: #0f3e5a;
+      background: linear-gradient(to bottom right, #AEE6F5, #FFB6C1);
+      color: #0F3E5A;
     }
-
-    .login-page,
-    .form-page,
-    .feed-page {
+    .login-page, .form-page, .feed-page {
       display: none;
       justify-content: center;
       align-items: center;
@@ -30,21 +21,16 @@
       flex-direction: column;
       padding: 1rem;
     }
-
     .active {
       display: flex;
     }
-
     .logo {
       font-family: 'Fredoka One', cursive;
       font-size: 3rem;
       margin-bottom: 1rem;
-      color: #ffb6c1;
+      color: #FFB6C1;
     }
-
-    button,
-    input,
-    textarea {
+    button, input, textarea {
       padding: 0.75rem;
       border: none;
       border-radius: 12px;
@@ -53,14 +39,12 @@
       width: 80%;
       font-family: 'Quicksand', sans-serif;
     }
-
     button {
-      background-color: #ffb6c1;
+      background-color: #FFB6C1;
       color: white;
       font-weight: bold;
       cursor: pointer;
     }
-
     .chat-card {
       background: white;
       border-radius: 16px;
@@ -68,20 +52,17 @@
       margin: 1rem 0;
       width: 90%;
       max-width: 500px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-
     .message {
       font-family: 'Caveat', cursive;
       font-size: 1.2rem;
       margin-bottom: 0.5rem;
     }
-
     .small {
       font-size: 0.9rem;
       color: #666;
     }
-
     .interact {
       display: flex;
       gap: 1rem;
@@ -90,10 +71,10 @@
   </style>
 </head>
 <body>
+
   <div class="login-page active" id="loginPage">
     <div class="logo">🌊 Ocean Chat</div>
     <button onclick="goToForm()">LOGIN</button>
-    <button onclick="goToFeed()">LIHAT PESAN ORANG</button>
   </div>
 
   <div class="form-page" id="formPage">
@@ -109,147 +90,133 @@
     <div id="feed"></div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Firebase config (pakai config kamu sendiri ya)
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAdr8Ovug4zqdCp3T6i6pH0tfM0bgsH4Ao",
       authDomain: "genn-3d1e7.firebaseapp.com",
       projectId: "genn-3d1e7",
-      storageBucket: "genn-3d1e7.firebasestorage.app",
+      storageBucket: "genn-3d1e7.appspot.com",
       messagingSenderId: "377479487738",
       appId: "1:377479487738:web:933e26e3e48057b0132943",
       measurementId: "G-3CS67F1ZR4"
     };
 
     // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Navigasi halaman
+    // Page control
     function goToForm() {
-      document.getElementById("loginPage").classList.remove("active");
-      document.getElementById("formPage").classList.add("active");
+      document.getElementById('loginPage').classList.remove('active');
+      document.getElementById('formPage').classList.add('active');
     }
 
-    function goToFeed() {
-      document.getElementById("loginPage").classList.remove("active");
-      document.getElementById("feedPage").classList.add("active");
-      loadMessages();
-    }
-
-    // Convert YouTube link jadi embed URL
+    // Convert YouTube link to embed link
     function convertYoutubeLink(link) {
-      const videoId = link.split("v=")[1];
-      if (!videoId) return "";
-      const ampersandPosition = videoId.indexOf("&");
-      if (ampersandPosition !== -1) {
-        return `https://www.youtube.com/embed/${videoId.substring(0, ampersandPosition)}`;
-      }
+      if (!link) return '';
+      const videoId = link.split('v=')[1];
+      if (!videoId) return '';
       return `https://www.youtube.com/embed/${videoId}`;
     }
 
-    // Submit pesan ke Firestore
-    async function submitMessage() {
-      const to = document.getElementById("to").value.trim();
-      const message = document.getElementById("message").value.trim();
-      const from = document.getElementById("from").value.trim();
-      const song = document.getElementById("song").value.trim();
+    // Submit message: simpan ke Firestore
+    function submitMessage() {
+      const to = document.getElementById('to').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const from = document.getElementById('from').value.trim();
+      const song = document.getElementById('song').value.trim();
 
       if (!to || !message || !from) {
-        alert("Please fill To, Message, and From!");
+        alert('Please fill To, Message, and From!');
         return;
       }
 
-      try {
-        await db.collection("messages").add({
-          to,
-          message,
-          from,
-          song,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          likes: 0,
-        });
-
+      db.collection('messages').add({
+        to,
+        message,
+        from,
+        song,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        alert('Pesan berhasil dikirim! 🎉');
         // Clear form
-        document.getElementById("to").value = "";
-        document.getElementById("message").value = "";
-        document.getElementById("from").value = "";
-        document.getElementById("song").value = "";
+        document.getElementById('to').value = '';
+        document.getElementById('message').value = '';
+        document.getElementById('from').value = '';
+        document.getElementById('song').value = '';
 
-        // Tampilkan feed
-        document.getElementById("formPage").classList.remove("active");
-        document.getElementById("feedPage").classList.add("active");
-
-        // Load messages baru
-        loadMessages();
-      } catch (error) {
-        alert("Gagal kirim pesan: " + error.message);
-      }
-    }
-
-    // Load dan tampilkan pesan dari Firestore
-    async function loadMessages() {
-      const feed = document.getElementById("feed");
-      feed.innerHTML = "";
-
-      const snapshot = await db.collection("messages").orderBy("timestamp", "desc").get();
-
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-
-        const chatCard = document.createElement("div");
-        chatCard.className = "chat-card";
-
-        chatCard.innerHTML = `
-          <div class="small">To: ${escapeHtml(data.to)}</div>
-          <div class="message">${escapeHtml(data.message)}</div>
-          <div class="small">From: ${escapeHtml(data.from)}</div>
-          <div>
-            ${
-              data.song
-                ? `<iframe width="100%" height="200" src="${convertYoutubeLink(data.song)}" frameborder="0" allowfullscreen></iframe>`
-                : ""
-            }
-          </div>
-          <div class="interact">
-            <button onclick="like(this)">❤️ Suka</button>
-            <button onclick="alert('Fitur komen coming soon!')">💬 Komen</button>
-            <button onclick="shareMessage('${escapeHtml(data.message)}')">🔗 Share</button>
-          </div>
-        `;
-
-        feed.appendChild(chatCard);
+        // Pindah ke halaman feed dan refresh pesan
+        document.getElementById('formPage').classList.remove('active');
+        document.getElementById('feedPage').classList.add('active');
+      })
+      .catch(error => {
+        alert('Error: ' + error.message);
       });
     }
 
-    // Fungsi untuk like
+    // Tampilkan pesan di feed, realtime listener
+    function showMessages() {
+      const feed = document.getElementById('feed');
+      feed.innerHTML = '';
+
+      db.collection('messages').orderBy('timestamp', 'desc')
+        .onSnapshot(snapshot => {
+          feed.innerHTML = ''; // reset setiap ada update
+
+          snapshot.forEach(doc => {
+            const data = doc.data();
+
+            const chatCard = document.createElement('div');
+            chatCard.className = 'chat-card';
+
+            chatCard.innerHTML = `
+              <div class="small">To: ${data.to}</div>
+              <div class="message">${data.message}</div>
+              <div class="small">From: ${data.from}</div>
+              <div>${data.song ? `<iframe width="100%" height="200" src="${convertYoutubeLink(data.song)}" frameborder="0" allowfullscreen></iframe>` : ''}</div>
+              <div class="interact">
+                <button onclick="like(this)">❤️ Suka</button>
+                <button onclick="alert('Fitur komen coming soon!')">💬 Komen</button>
+                <button onclick="shareMessage('${data.message}')">🔗 Share</button>
+              </div>
+            `;
+
+            feed.appendChild(chatCard);
+          });
+        });
+    }
+
+    // Like button
     function like(btn) {
-      btn.innerText = "💖 Disukai";
+      btn.innerText = '💖 Disukai';
       btn.disabled = true;
     }
 
-    // Fungsi share ke clipboard
+    // Share button
     function shareMessage(text) {
       navigator.clipboard.writeText(text);
-      alert("Pesan disalin ke clipboard!");
+      alert('Pesan disalin ke clipboard!');
     }
 
-    // Fungsi escape HTML biar aman dari script injection
-    function escapeHtml(text) {
-      const map = {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;",
-      };
-      return text.replace(/[&<>"']/g, (m) => map[m]);
-    }
+    // Load messages realtime waktu halaman feed muncul
+    document.getElementById('feedPage').addEventListener('click', showMessages);
+
+    // Alternatif: show messages langsung waktu halaman feed aktif
+    // Jadi, pas pindah halaman ke feed, otomatis refresh pesan
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.target.classList.contains('feed-page') && mutation.target.classList.contains('active')) {
+          showMessages();
+        }
+      });
+    });
+    observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
   </script>
 </body>
 </html>
-
