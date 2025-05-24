@@ -93,6 +93,7 @@
   <div class="login-page active" id="loginPage">
     <div class="logo">🌊 Ocean Chat</div>
     <button onclick="goToForm()">LOGIN</button>
+    <button onclick="goToFeed()">LIHAT PESAN ORANG</button>
   </div>
 
   <div class="form-page" id="formPage">
@@ -132,6 +133,12 @@
     function goToForm() {
       document.getElementById("loginPage").classList.remove("active");
       document.getElementById("formPage").classList.add("active");
+    }
+
+    function goToFeed() {
+      document.getElementById("loginPage").classList.remove("active");
+      document.getElementById("feedPage").classList.add("active");
+      loadMessages();
     }
 
     // Convert YouTube link jadi embed URL
@@ -242,11 +249,7 @@
       };
       return text.replace(/[&<>"']/g, (m) => map[m]);
     }
-
-    // Load pesan otomatis kalau buka feed
-    document.addEventListener("DOMContentLoaded", () => {
-      loadMessages();
-    });
   </script>
 </body>
 </html>
+
