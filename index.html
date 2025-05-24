@@ -2,18 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ocean Diary with Firebase</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600&family=Caveat&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ocean Love Diary</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600&family=Caveat&display=swap" rel="stylesheet">
   <style>
-    /* ... pakai style kamu yang sebelumnya ... */
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: 'Quicksand', sans-serif;
       background: linear-gradient(to bottom right, #AEE6F5, #FFB6C1);
       color: #0F3E5A;
     }
-    .login-page, .form-page, .feed-page {
+
+    .page {
       display: none;
       justify-content: center;
       align-items: center;
@@ -21,15 +25,18 @@
       flex-direction: column;
       padding: 1rem;
     }
+
     .active {
       display: flex;
     }
+
     .logo {
       font-family: 'Fredoka One', cursive;
       font-size: 3rem;
       margin-bottom: 1rem;
       color: #FFB6C1;
     }
+
     button, input, textarea {
       padding: 0.75rem;
       border: none;
@@ -39,12 +46,14 @@
       width: 80%;
       font-family: 'Quicksand', sans-serif;
     }
+
     button {
       background-color: #FFB6C1;
       color: white;
       font-weight: bold;
       cursor: pointer;
     }
+
     .chat-card {
       background: white;
       border-radius: 16px;
@@ -54,15 +63,18 @@
       max-width: 500px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
+
     .message {
       font-family: 'Caveat', cursive;
       font-size: 1.2rem;
       margin-bottom: 0.5rem;
     }
+
     .small {
       font-size: 0.9rem;
       color: #666;
     }
+
     .interact {
       display: flex;
       gap: 1rem;
@@ -71,34 +83,36 @@
   </style>
 </head>
 <body>
-
-  <div class="login-page active" id="loginPage">
-    <div class="logo">🌊 Ocean Chat</div>
-    <button onclick="goToForm()">LOGIN</button>
+  <div class="page active" id="loginPage">
+    <div class="logo">🌊 Ocean Love</div>
+    <button onclick="goToForm()">Login</button>
   </div>
 
-  <div class="form-page" id="formPage">
-    <input type="text" id="to" placeholder="To" />
+  <div class="page" id="formPage">
+    <input type="text" id="to" placeholder="To">
     <textarea id="message" rows="4" placeholder="Your Message"></textarea>
-    <input type="text" id="from" placeholder="From" />
-    <input type="text" id="song" placeholder="YouTube Link" />
+    <input type="text" id="from" placeholder="From">
+    <input type="text" id="song" placeholder="YouTube Link">
     <button onclick="submitMessage()">KIRIM</button>
+    <button onclick="goToFeed()">📬 Open Love Letters</button>
   </div>
 
-  <div class="feed-page" id="feedPage">
+  <div class="page" id="feedPage">
     <div class="logo">💬 Ocean Feed</div>
     <div id="feed"></div>
+    <button onclick="goToForm()">💌 Write Another</button>
   </div>
 
   <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
-    // Firebase config
+    // Firebase config kamu
     const firebaseConfig = {
       apiKey: "AIzaSyAdr8Ovug4zqdCp3T6i6pH0tfM0bgsH4Ao",
       authDomain: "genn-3d1e7.firebaseapp.com",
+      databaseURL: "https://genn-3d1e7-default-rtdb.firebaseio.com",
       projectId: "genn-3d1e7",
       storageBucket: "genn-3d1e7.appspot.com",
       messagingSenderId: "377479487738",
@@ -106,117 +120,79 @@
       measurementId: "G-3CS67F1ZR4"
     };
 
-    // Initialize Firebase
+    // Inisialisasi Firebase
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const db = firebase.database();
 
-    // Page control
     function goToForm() {
       document.getElementById('loginPage').classList.remove('active');
+      document.getElementById('feedPage').classList.remove('active');
       document.getElementById('formPage').classList.add('active');
     }
 
-    // Convert YouTube link to embed link
+    function goToFeed() {
+      document.getElementById('formPage').classList.remove('active');
+      document.getElementById('loginPage').classList.remove('active');
+      document.getElementById('feedPage').classList.add('active');
+      loadMessages();
+    }
+
     function convertYoutubeLink(link) {
-      if (!link) return '';
-      const videoId = link.split('v=')[1];
-      if (!videoId) return '';
+      const videoId = link.split('v=')[1]?.split('&')[0];
       return `https://www.youtube.com/embed/${videoId}`;
     }
 
-    // Submit message: simpan ke Firestore
     function submitMessage() {
-      const to = document.getElementById('to').value.trim();
-      const message = document.getElementById('message').value.trim();
-      const from = document.getElementById('from').value.trim();
-      const song = document.getElementById('song').value.trim();
+      const to = document.getElementById('to').value;
+      const message = document.getElementById('message').value;
+      const from = document.getElementById('from').value;
+      const song = document.getElementById('song').value;
 
-      if (!to || !message || !from) {
-        alert('Please fill To, Message, and From!');
-        return;
-      }
+      const newMsg = {
+        to, message, from, song, createdAt: Date.now()
+      };
 
-      db.collection('messages').add({
-        to,
-        message,
-        from,
-        song,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      })
-      .then(() => {
-        alert('Pesan berhasil dikirim! 🎉');
-        // Clear form
-        document.getElementById('to').value = '';
-        document.getElementById('message').value = '';
-        document.getElementById('from').value = '';
-        document.getElementById('song').value = '';
-
-        // Pindah ke halaman feed dan refresh pesan
-        document.getElementById('formPage').classList.remove('active');
-        document.getElementById('feedPage').classList.add('active');
-      })
-      .catch(error => {
-        alert('Error: ' + error.message);
-      });
+      db.ref('messages').push(newMsg);
+      goToFeed();
     }
 
-    // Tampilkan pesan di feed, realtime listener
-    function showMessages() {
+    function loadMessages() {
       const feed = document.getElementById('feed');
       feed.innerHTML = '';
 
-      db.collection('messages').orderBy('timestamp', 'desc')
-        .onSnapshot(snapshot => {
-          feed.innerHTML = ''; // reset setiap ada update
-
-          snapshot.forEach(doc => {
-            const data = doc.data();
-
-            const chatCard = document.createElement('div');
-            chatCard.className = 'chat-card';
-
-            chatCard.innerHTML = `
-              <div class="small">To: ${data.to}</div>
-              <div class="message">${data.message}</div>
-              <div class="small">From: ${data.from}</div>
-              <div>${data.song ? `<iframe width="100%" height="200" src="${convertYoutubeLink(data.song)}" frameborder="0" allowfullscreen></iframe>` : ''}</div>
+      db.ref('messages').once('value', snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          const entries = Object.values(data).sort((a, b) => b.createdAt - a.createdAt);
+          entries.forEach(msg => {
+            const card = document.createElement('div');
+            card.className = 'chat-card';
+            card.innerHTML = `
+              <div class="small">To: ${msg.to}</div>
+              <div class="message">${msg.message}</div>
+              <div class="small">From: ${msg.from}</div>
+              <div>${msg.song ? `<iframe width="100%" height="200" src="${convertYoutubeLink(msg.song)}" frameborder="0" allowfullscreen></iframe>` : ''}</div>
               <div class="interact">
-                <button onclick="like(this)">❤️ Suka</button>
-                <button onclick="alert('Fitur komen coming soon!')">💬 Komen</button>
-                <button onclick="shareMessage('${data.message}')">🔗 Share</button>
+                <button onclick="like(this)">❤️ Like</button>
+                <button onclick="alert('Comment feature coming soon!')">💬 Comment</button>
+                <button onclick="shareMessage('${msg.message}')">🔗 Share</button>
               </div>
             `;
-
-            feed.appendChild(chatCard);
+            feed.appendChild(card);
           });
-        });
+        }
+      });
     }
 
-    // Like button
     function like(btn) {
-      btn.innerText = '💖 Disukai';
+      btn.innerText = '💖 Liked';
       btn.disabled = true;
     }
 
-    // Share button
     function shareMessage(text) {
       navigator.clipboard.writeText(text);
-      alert('Pesan disalin ke clipboard!');
+      alert('Message copied to clipboard!');
     }
-
-    // Load messages realtime waktu halaman feed muncul
-    document.getElementById('feedPage').addEventListener('click', showMessages);
-
-    // Alternatif: show messages langsung waktu halaman feed aktif
-    // Jadi, pas pindah halaman ke feed, otomatis refresh pesan
-    const observer = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        if (mutation.target.classList.contains('feed-page') && mutation.target.classList.contains('active')) {
-          showMessages();
-        }
-      });
-    });
-    observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
   </script>
 </body>
 </html>
