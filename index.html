@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ocean Chat Diary</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600&family=Caveat&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="login-page active" id="loginPage">
+    <div class="logo">🌊 Ocean Chat</div>
+    <button onclick="goToForm()">LOGIN</button>
+  </div>
+
+  <div class="form-page" id="formPage">
+    <input type="text" id="to" placeholder="To" />
+    <textarea id="message" rows="4" placeholder="Your Message"></textarea>
+    <input type="text" id="from" placeholder="From" />
+    <input type="text" id="song" placeholder="YouTube Link" />
+    <button onclick="submitMessage()">KIRIM</button>
+  </div>
+
+  <div class="feed-page" id="feedPage">
+    <div class="logo">💬 Ocean Feed</div>
+    <div id="feed"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
