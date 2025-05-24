@@ -2,58 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ocean Love Diary</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600&family=Caveat&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ocean Chat with YouTube Embed</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
-      margin: 0;
       font-family: 'Quicksand', sans-serif;
       background: linear-gradient(to bottom right, #AEE6F5, #FFB6C1);
       color: #0F3E5A;
-    }
-
-    .page {
-      display: none;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
+      margin: 0;
       padding: 1rem;
-    }
-
-    .active {
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
-
-    .logo {
-      font-family: 'Fredoka One', cursive;
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      color: #FFB6C1;
-    }
-
-    button, input, textarea {
+    input, textarea, button {
+      width: 300px;
+      margin: 0.5rem 0;
       padding: 0.75rem;
-      border: none;
       border-radius: 12px;
-      margin: 0.5rem;
+      border: none;
       font-size: 1rem;
-      width: 80%;
-      font-family: 'Quicksand', sans-serif;
     }
-
     button {
       background-color: #FFB6C1;
       color: white;
       font-weight: bold;
       cursor: pointer;
     }
-
     .chat-card {
       background: white;
       border-radius: 16px;
@@ -63,135 +39,74 @@
       max-width: 500px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-
-    .message {
-      font-family: 'Caveat', cursive;
-      font-size: 1.2rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .small {
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    .interact {
-      display: flex;
-      gap: 1rem;
+    iframe {
+      border-radius: 12px;
       margin-top: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <div class="page active" id="loginPage">
-    <div class="logo">🌊 Ocean Love</div>
-    <button onclick="goToForm()">Login</button>
-  </div>
 
-  <div class="page" id="formPage">
-    <input type="text" id="to" placeholder="To">
-    <textarea id="message" rows="4" placeholder="Your Message"></textarea>
-    <input type="text" id="from" placeholder="From">
-    <input type="text" id="song" placeholder="YouTube Link">
-    <button onclick="submitMessage()">KIRIM</button>
-    <button onclick="goToFeed()">📬 Open Love Letters</button>
-  </div>
+  <h1>🌊 Ocean Chat</h1>
 
-  <div class="page" id="feedPage">
-    <div class="logo">💬 Ocean Feed</div>
-    <div id="feed"></div>
-    <button onclick="goToForm()">💌 Write Another</button>
-  </div>
+  <input type="text" id="to" placeholder="To" />
+  <textarea id="message" rows="3" placeholder="Your Message"></textarea>
+  <input type="text" id="from" placeholder="From" />
+  <input type="text" id="song" placeholder="YouTube Link (ex: https://youtu.be/ucRVDoFkcxc)" />
+  <button onclick="submitMessage()">Send</button>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <div id="feed"></div>
 
   <script>
-    // Firebase config kamu
-    const firebaseConfig = {
-      apiKey: "AIzaSyAdr8Ovug4zqdCp3T6i6pH0tfM0bgsH4Ao",
-      authDomain: "genn-3d1e7.firebaseapp.com",
-      databaseURL: "https://genn-3d1e7-default-rtdb.firebaseio.com",
-      projectId: "genn-3d1e7",
-      storageBucket: "genn-3d1e7.appspot.com",
-      messagingSenderId: "377479487738",
-      appId: "1:377479487738:web:933e26e3e48057b0132943",
-      measurementId: "G-3CS67F1ZR4"
-    };
-
-    // Inisialisasi Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    function goToForm() {
-      document.getElementById('loginPage').classList.remove('active');
-      document.getElementById('feedPage').classList.remove('active');
-      document.getElementById('formPage').classList.add('active');
-    }
-
-    function goToFeed() {
-      document.getElementById('formPage').classList.remove('active');
-      document.getElementById('loginPage').classList.remove('active');
-      document.getElementById('feedPage').classList.add('active');
-      loadMessages();
-    }
-
     function convertYoutubeLink(link) {
-      const videoId = link.split('v=')[1]?.split('&')[0];
+      let videoId = '';
+
+      if (link.includes('youtu.be')) {
+        // shortened URL format
+        const parts = link.split('/');
+        videoId = parts[parts.length - 1].split('?')[0];
+      } else if (link.includes('youtube.com')) {
+        // normal URL format
+        const urlParams = new URLSearchParams(link.split('?')[1]);
+        videoId = urlParams.get('v');
+      }
+
+      if (!videoId) return '';
       return `https://www.youtube.com/embed/${videoId}`;
     }
 
     function submitMessage() {
-      const to = document.getElementById('to').value;
-      const message = document.getElementById('message').value;
-      const from = document.getElementById('from').value;
-      const song = document.getElementById('song').value;
+      const to = document.getElementById('to').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const from = document.getElementById('from').value.trim();
+      const song = document.getElementById('song').value.trim();
 
-      const newMsg = {
-        to, message, from, song, createdAt: Date.now()
-      };
+      if (!to || !message || !from) {
+        alert('Please fill To, Message, and From fields!');
+        return;
+      }
 
-      db.ref('messages').push(newMsg);
-      goToFeed();
-    }
-
-    function loadMessages() {
       const feed = document.getElementById('feed');
-      feed.innerHTML = '';
 
-      db.ref('messages').once('value', snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          const entries = Object.values(data).sort((a, b) => b.createdAt - a.createdAt);
-          entries.forEach(msg => {
-            const card = document.createElement('div');
-            card.className = 'chat-card';
-            card.innerHTML = `
-              <div class="small">To: ${msg.to}</div>
-              <div class="message">${msg.message}</div>
-              <div class="small">From: ${msg.from}</div>
-              <div>${msg.song ? `<iframe width="100%" height="200" src="${convertYoutubeLink(msg.song)}" frameborder="0" allowfullscreen></iframe>` : ''}</div>
-              <div class="interact">
-                <button onclick="like(this)">❤️ Like</button>
-                <button onclick="alert('Comment feature coming soon!')">💬 Comment</button>
-                <button onclick="shareMessage('${msg.message}')">🔗 Share</button>
-              </div>
-            `;
-            feed.appendChild(card);
-          });
-        }
-      });
-    }
+      const chatCard = document.createElement('div');
+      chatCard.className = 'chat-card';
 
-    function like(btn) {
-      btn.innerText = '💖 Liked';
-      btn.disabled = true;
-    }
+      const embedLink = song ? convertYoutubeLink(song) : '';
 
-    function shareMessage(text) {
-      navigator.clipboard.writeText(text);
-      alert('Message copied to clipboard!');
+      chatCard.innerHTML = `
+        <div><strong>To:</strong> ${to}</div>
+        <div style="margin: 0.5rem 0;">${message}</div>
+        <div><strong>From:</strong> ${from}</div>
+        ${embedLink ? `<iframe width="100%" height="200" src="${embedLink}" frameborder="0" allowfullscreen></iframe>` : ''}
+      `;
+
+      feed.prepend(chatCard);
+
+      // Clear inputs
+      document.getElementById('to').value = '';
+      document.getElementById('message').value = '';
+      document.getElementById('from').value = '';
+      document.getElementById('song').value = '';
     }
   </script>
 </body>
