@@ -1,0 +1,108 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Quicksand', sans-serif;
+  background: linear-gradient(to bottom right, #AEE6F5, #FFB6C1);
+  color: #0F3E5A;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "🌊✨🐚🌟🐠🌈";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 200vw;
+  height: 200vh;
+  font-size: 3rem;
+  color: rgba(255, 182, 193, 0.15);
+  z-index: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: floatEmoji 60s linear infinite;
+  user-select: none;
+  opacity: 0.2;
+}
+
+@keyframes floatEmoji {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  100% {
+    transform: translateX(-50vw) translateY(-50vh);
+  }
+}
+
+.login-page,
+.form-page,
+.feed-page {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+  padding: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.active {
+  display: flex;
+}
+
+.logo {
+  font-family: 'Fredoka One', cursive;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #FFB6C1;
+}
+
+button,
+input,
+textarea {
+  padding: 0.75rem;
+  border: none;
+  border-radius: 12px;
+  margin: 0.5rem;
+  font-size: 1rem;
+  width: 80%;
+  font-family: 'Quicksand', sans-serif;
+}
+
+button {
+  background-color: #FFB6C1;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.chat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1rem;
+  margin: 1rem 0;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message {
+  font-family: 'Caveat', cursive;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.small {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.interact {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
